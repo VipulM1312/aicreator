@@ -35,18 +35,49 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "Generation failed");
+        throw new Error("Server error, please try again.");
       }
 
-      const blob = await response.blob();
-      const mediaUrl = URL.createObjectURL(blob);
+      const contentType = response.headers.get("content-type");
 
-      result.innerHTML = `<img src="${mediaUrl}" style="max-width: 100%; border-radius: 12px; margin-top: 10px;">`;
-      status.innerText = "Success!";
+      // Case 1: If API directly returns Image Binary
+      if (contentType && contentType.includes("image")) {
+        const blob = await response.blob();
+        const mediaUrl = URL.createObjectURL(blob);
+        showImage(mediaUrl, result, status);
+        return;
+      }
+
+      // Case 2: If API returns JSON containing URL
+      const data = await response.json();
+      const imageUrl = data.url || data.image || data.response || (data[0] && data[0].url);
+
+      if (imageUrl) {
+        showImage(imageUrl, result, status);
+      } else {
+        throw new Error("Image URL not found in API response");
+      }
+
     } catch (err) {
       status.innerText = "Error: " + err.message;
     }
   }
+
+  function showImage(src, result, status) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.style.maxWidth = "100%";
+    img.style.borderRadius = "12px";
+    img.style.marginTop = "10px";
+
+    img.onload = () => {
+      result.innerHTML = "";
+      result.appendChild(img);
+      status.innerText = "Success!";
+    };
+
+    img.onerror = () => {
+      status.innerText = "Failed to load generated image.";
+    };
+  }
 });
-    
