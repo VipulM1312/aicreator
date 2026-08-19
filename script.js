@@ -8,11 +8,12 @@ const pages = [
   ["Terms & Conditions", "#terms", "Website terms."]
 ];
 
+/* YOUR CLOUDFLARE WORKER */
 const API_URL =
   "https://aicreatorapi.mvtalpada613.workers.dev";
 
 
-/* IMAGE */
+/* IMAGE GENERATOR */
 
 const imageBtn = document.getElementById("imageBtn");
 const imageStatus = document.getElementById("imageStatus");
@@ -46,20 +47,21 @@ imageBtn.addEventListener("click", async () => {
     });
 
     if (!response.ok) {
-      throw new Error(await response.text());
+      const error = await response.text();
+      throw new Error(error);
     }
 
     const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
+    const imageURL = URL.createObjectURL(blob);
 
     imageResult.innerHTML = `
       <img
-        src="${url}"
+        src="${imageURL}"
         alt="AI Generated Image"
         style="max-width:100%;border-radius:12px;"
       >
       <br><br>
-      <a href="${url}" download="ai-image.png">
+      <a href="${imageURL}" download="ai-image.png">
         Download Image
       </a>
     `;
@@ -74,9 +76,7 @@ imageBtn.addEventListener("click", async () => {
       "Image generation failed.";
 
     imageResult.innerHTML = `
-      <p class="note">
-        ${error.message}
-      </p>
+      <p class="note">${error.message}</p>
     `;
   }
 
@@ -84,7 +84,7 @@ imageBtn.addEventListener("click", async () => {
 });
 
 
-/* VIDEO */
+/* VIDEO GENERATOR */
 
 const videoBtn = document.getElementById("videoBtn");
 const videoStatus = document.getElementById("videoStatus");
@@ -102,7 +102,7 @@ videoBtn.addEventListener("click", async () => {
 
   videoBtn.disabled = true;
   videoStatus.textContent =
-    "Generating video... This may take longer.";
+    "Generating video... Please wait.";
   videoResult.innerHTML = "";
 
   try {
@@ -118,20 +118,21 @@ videoBtn.addEventListener("click", async () => {
     });
 
     if (!response.ok) {
-      throw new Error(await response.text());
+      const error = await response.text();
+      throw new Error(error);
     }
 
     const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
+    const videoURL = URL.createObjectURL(blob);
 
     videoResult.innerHTML = `
       <video
-        src="${url}"
+        src="${videoURL}"
         controls
         style="max-width:100%;border-radius:12px;"
       ></video>
       <br><br>
-      <a href="${url}" download="ai-video.mp4">
+      <a href="${videoURL}" download="ai-video.mp4">
         Download Video
       </a>
     `;
@@ -146,9 +147,7 @@ videoBtn.addEventListener("click", async () => {
       "Video generation failed.";
 
     videoResult.innerHTML = `
-      <p class="note">
-        ${error.message}
-      </p>
+      <p class="note">${error.message}</p>
     `;
   }
 
