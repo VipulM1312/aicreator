@@ -4,73 +4,49 @@ document.addEventListener("DOMContentLoaded", () => {
   const imageBtn = document.getElementById("imageBtn");
   const videoBtn = document.getElementById("videoBtn");
 
-  // Image Generation Logic
   if (imageBtn) {
-    imageBtn.addEventListener("click", async () => {
-      const prompt = document.getElementById("imagePrompt").value.trim();
-      const status = document.getElementById("imageStatus");
-      const result = document.getElementById("imageResult");
-
-      if (!prompt) {
-        status.innerText = "Kripya prompt likhein!";
-        return;
-      }
-
-      status.innerText = "Generating image...";
-      result.innerHTML = "";
-
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: prompt, type: "image" })
-        });
-
-        if (!response.ok) throw new Error("Image generate nahi ho payi");
-
-        const blob = await response.blob();
-        const imgUrl = URL.createObjectURL(blob);
-
-        result.innerHTML = `<img src="${imgUrl}" alt="Generated Image" style="max-width: 100%; border-radius: 8px;">`;
-        status.innerText = "Success!";
-      } catch (err) {
-        status.innerText = "Error: " + err.message;
-      }
-    });
+    imageBtn.addEventListener("click", () => generateMedia("imagePrompt", "imageStatus", "imageResult"));
   }
 
-  // Video Generation Logic
   if (videoBtn) {
-    videoBtn.addEventListener("click", async () => {
-      const prompt = document.getElementById("videoPrompt").value.trim();
-      const status = document.getElementById("videoStatus");
-      const result = document.getElementById("videoResult");
+    videoBtn.addEventListener("click", () => generateMedia("videoPrompt", "videoStatus", "videoResult"));
+  }
 
-      if (!prompt) {
-        status.innerText = "Kripya prompt likhein!";
-        return;
+  async function generateMedia(promptId, statusId, resultId) {
+    const promptInput = document.getElementById(promptId);
+    const status = document.getElementById(statusId);
+    const result = document.getElementById(resultId);
+
+    const prompt = promptInput ? promptInput.value.trim() : "";
+
+    if (!prompt) {
+      status.innerText = "Please enter a prompt!";
+      return;
+    }
+
+    status.innerText = "Generating... Please wait 5-10 seconds.";
+    result.innerHTML = "";
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Generation failed");
       }
 
-      status.innerText = "Generating video/animation...";
-      result.innerHTML = "";
+      const blob = await response.blob();
+      const mediaUrl = URL.createObjectURL(blob);
 
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: prompt, type: "video" })
-        });
-
-        if (!response.ok) throw new Error("Video generate nahi ho payi");
-
-        const blob = await response.blob();
-        const mediaUrl = URL.createObjectURL(blob);
-
-        result.innerHTML = `<img src="${mediaUrl}" alt="Generated Video" style="max-width: 100%; border-radius: 8px;">`;
-        status.innerText = "Success!";
-      } catch (err) {
-        status.innerText = "Error: " + err.message;
-      }
-    });
+      result.innerHTML = `<img src="${mediaUrl}" style="max-width: 100%; border-radius: 12px; margin-top: 10px;">`;
+      status.innerText = "Success!";
+    } catch (err) {
+      status.innerText = "Error: " + err.message;
+    }
   }
 });
+    
